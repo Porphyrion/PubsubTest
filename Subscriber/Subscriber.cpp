@@ -20,7 +20,7 @@ struct SubscriberPrivate
     static constexpr const char* MSG_STOP = "stop";
 
     SubscriberPrivate(Subscriber* parent, QString host, uint port)
-        : parent(parent), ctx(2), host(host), port(port)
+        : ctx(2), host(host), port(port), parent(parent)
     {
         controllerBind = "inproc://#controller";
         controller = zmq::socket_t(ctx, zmq::socket_type::push);
@@ -124,6 +124,8 @@ struct SubscriberPrivate
     }
 };
 
+
+
 Subscriber::Subscriber(QString host, uint port, QObject* parent)
     : QObject(parent), _d(new SubscriberPrivate(this, host, port))
 {
@@ -137,9 +139,8 @@ void Subscriber::subscribe(QString channel)
 
 void Subscriber::customEvent(QEvent* event)
 {
-    if (event->type() != ReceiveEvent::Type) {
+    if (event->type() != ReceiveEvent::Type)
         return;
-    }
 
     const auto ev = dynamic_cast<ReceiveEvent*>(event);
 

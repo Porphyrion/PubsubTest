@@ -4,76 +4,64 @@
 #include <QDateTime>
 #include <QCoreApplication>
 
-#include "Publisher.h"
-#include "Subscriber.h"
+
+#include <QCommandLineParser>
+#include <QCommandLineOption>
+
+#include "publisherapp.h"
+
 
 int main(int argc, char* argv[])
 {
     QCoreApplication a(argc, argv);
 
-    Publisher p;
+    QCommandLineParser parser;
 
-    QThread::msleep(200);
+    parser.addPositionalArgument("destination", QCoreApplication::translate("main", "Destination directory."));
 
-    Subscriber s("127.0.0.1", p.port());
+    parser.setOptionsAfterPositionalArgumentsMode(QCommandLineParser::ParseAsPositionalArguments);
+    parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
 
-    QObject::connect(&s, &Subscriber::received, [](QByteArray data, QString channel) {
-        qInfo() << "Channel:" << channel
-            << "Data:" << QString::fromUtf8(data);
-    });
+    QCommandLineOption fastPublisher(QStringList()<<"f"<<"fast",
+                                     QCoreApplication::translate("main", "Amount of fast prodecures"),
+                                     QCoreApplication::translate("main", "Fast producers"));
+    parser.addOption(fastPublisher);
 
-    QThread::msleep(200);
+    QCommandLineOption bigMessagePublisher("b",
+                                           QCoreApplication::translate("main", "Amount of fast prodecures witch makes big messages"),
+                                           QCoreApplication::translate("main", "Big"));
+    parser.addOption(bigMessagePublisher);
 
+    QCommandLineOption bigFast("fb",
+                               QCoreApplication::translate("main", "Amount of fast prodecures witch makes big messages"),
+                               QCoreApplication::translate("main", "Fast and big "));
+    parser.addOption(bigFast);
 
-    qDebug() << "subscribe test1";
-    s.subscribe("test1");
+    QCommandLineOption casual("c",
+                              QCoreApplication::translate("main", "Amount of casual prodecers"),
+                              QCoreApplication::translate("main", "Casual"));
+    auto x = parser.addOption(casual);
 
-    QThread::msleep(200);
-
-    p.publish("1 msg", "test1");
-    p.publish("2 msg", "test1");
-    p.publish("3 msg", "test33");
-
-    
-    QThread::msleep(200);
-
-    p.publish("21 msg", "test1");
-    p.publish("22 msg", "test1");
-    p.publish("23 msg", "test1");
-
-    p.publish("31 msg", "test2");
-    p.publish("32 msg", "test2");
-    p.publish("33 msg", "test2");
-
-    QThread::msleep(200);
-
-    qDebug() << "subscribe test2";
-    s.subscribe("test2");
-
-    QThread::msleep(200);
-
-    p.publish("41 msg", "test1");
-    p.publish("42 msg", "test1");
-    p.publish("43 msg", "test1");
-
-    p.publish("51 msg", "test2");
-    p.publish("52 msg", "test2");
-    p.publish("53 msg", "test2");
+    parser.process(a);
 
 
-    QTimer timer1;
-    QObject::connect(&timer1, &QTimer::timeout, [&]() {
-        const auto msg = QString("Msg at %1").arg(QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs));
-        p.publish(msg.toUtf8(), "test1");
-    });
-    timer1.start(1000);
+    if(parser.isSet(fastPublisher))
+        f = parser.value(fastPublisher).toInt();
 
-    QTimer timer2;
-    QObject::connect(&timer2, &QTimer::timeout, [&]() {
-        const auto msg = QString("Msg at %1").arg(QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs));
-        p.publish(msg.toUtf8(), "test2");
-    });
-    timer2.start(1000);
+    if(parser.isSet(bigMessagePublisher))
+        b = parser.value(bigMessagePublisher).toInt();
+
+    if(parser.isSet(bigFast))
+        bf = parser.value(bigFast).toInt();
+
+    if(parser.isSet(casual))
+        f = parser.value(casual).toInt();
+
+    qDebug()<<f<<b<<bf<<c;
+
+    const QStringList args = parser.positionalArguments();
+
+    PublisherApp p(c, f, b, bf);
 
     return a.exec();
 }

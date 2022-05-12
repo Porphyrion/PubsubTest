@@ -15,13 +15,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 
+find_package(Boost REQUIRED COMPONENTS atomic)
 find_package(cppzmq)
 
-add_executable(pubsub
-  main.cpp
-  Publisher.cpp
-  Subscriber.cpp
-)
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Publisher")
 
-target_link_libraries(pubsub Qt${QT_VERSION_MAJOR}::Core cppzmq)
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Subscriber")
+
 

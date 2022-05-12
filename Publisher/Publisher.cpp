@@ -9,6 +9,7 @@
 #include <zmq.hpp>
 #include <zmq_addon.hpp>
 
+
 struct PublisherPrivate
 {
     PublisherPrivate(uint port)
@@ -85,6 +86,9 @@ struct PublisherPrivate
         }
     }
 };
+
+
+
 
 Publisher::Publisher(uint port, QObject* parent /*= nullptr*/)
     : QObject(parent), _d(new PublisherPrivate(port))
