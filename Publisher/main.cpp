@@ -45,6 +45,8 @@ int main(int argc, char* argv[])
     parser.process(a);
 
 
+    int  f = 0,  b = 0, bf = 0, c = 0;
+
     if(parser.isSet(fastPublisher))
         f = parser.value(fastPublisher).toInt();
 
@@ -56,10 +58,6 @@ int main(int argc, char* argv[])
 
     if(parser.isSet(casual))
         f = parser.value(casual).toInt();
-
-    qDebug()<<f<<b<<bf<<c;
-
-    const QStringList args = parser.positionalArguments();
 
     PublisherApp p(c, f, b, bf);
 
