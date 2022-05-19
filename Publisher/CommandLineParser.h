@@ -7,7 +7,7 @@
 #include <QCommandLineOption>
 
 
-class CommnadLineParser : public QObject
+class CommandLineParser : public QObject
 {
     Q_OBJECT;
 public:
@@ -22,7 +22,7 @@ public:
         int port = 1488;
     };
 
-    CommnadLineParser(QStringList args);
+    CommandLineParser(QStringList args);
 
      bool parse();
      AppData data();
@@ -45,14 +45,18 @@ private:
     AppData _data;
     bool _severalChannels = false;
 
-    CommnadLineParser::AppData _parse();
+    CommandLineParser::AppData _parse();
 
     QString _lastError;
 
     void _initParser();
 
     bool _parseChannelData();
-    void _parseChannelOption(bool several);
+    bool _parseChannelOption(int size);
+    bool _parseChannelOption();
+
     bool _parseUnobligatoryOption();
+
+    void _fillChannelsData(QStringList&& velocity, QStringList&& messageSize, QStringList&& names);
 };
 
