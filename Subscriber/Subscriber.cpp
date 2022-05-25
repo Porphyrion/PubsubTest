@@ -96,8 +96,6 @@ struct SubscriberPrivate
 
                 QByteArray data(static_cast<const char*>(recv_msgs[1].data()), recv_msgs[1].size());
                 QByteArray channel(static_cast<const char*>(recv_msgs[0].data()), recv_msgs[0].size());
-
-                QCoreApplication::postEvent(parent, new ReceiveEvent{ data, QString::fromUtf8(channel) });
             }
         }
     }
@@ -129,22 +127,12 @@ struct SubscriberPrivate
 Subscriber::Subscriber(QString host, uint port, QObject* parent)
     : QObject(parent), _d(new SubscriberPrivate(this, host, port))
 {
-    QEvent::registerEventType(ReceiveEvent::Type);
+    qInfo()<<"Subsciber listen to: "<<host<<":"<<port;
 }
+
 
 void Subscriber::subscribe(QString channel)
 {
     _d->subscribe(channel);
 }
 
-void Subscriber::customEvent(QEvent* event)
-{
-    if (event->type() != ReceiveEvent::Type)
-        return;
-
-    const auto ev = dynamic_cast<ReceiveEvent*>(event);
-
-    emit received(ev->data, ev->channel);
-
-    event->accept();
-}
