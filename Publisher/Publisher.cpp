@@ -3,11 +3,9 @@
 #include <QUuid>
 #include <QDebug>
 #include <QMutex>
+#include <QTimer>
 
 #include <thread>
-
-#include <zmq.hpp>
-#include <zmq_addon.hpp>
 
 
 struct PublisherPrivate
@@ -26,36 +24,32 @@ struct PublisherPrivate
 
     ~PublisherPrivate() {
         proxyThread.join();
+        monitorThread.join();
     }
 
     zmq::context_t ctx;
     zmq::socket_t  publisher;
     std::thread    proxyThread;
+    std::thread    monitorThread;
     QString        inprocUuid;
     uint           port;
     QMutex         guard;
+    Monitoring     mon;
+
 
     void proxyWorker() {
 
         try {
+            using namespace std::placeholders;
+
             zmq::socket_t router(ctx, zmq::socket_type::xsub);
             zmq::socket_t dealer(ctx, zmq::socket_type::xpub);
 
             router.connect(inprocUuid.toUtf8().constData());
 
-            if (port)
-                dealer.bind(QString("tcp://*:%1").arg(port).toUtf8().constData());
-            else {
-                dealer.bind("tcp://*:*");
+            dealer.bind(QString("tcp://*:%1").arg(port).toUtf8().constData());
 
-                const auto endpoint =
-                    dealer.get(zmq::sockopt::last_endpoint);
-
-                auto sep = endpoint.find_last_of(':');
-                auto sPort = endpoint.substr(sep + 1, endpoint.size() - sep - 1);
-
-                port = std::atoi(sPort.c_str());
-            }
+            monitorThread = std::thread(std::bind(&Monitoring::monitor, &mon, std::ref(dealer)));
 
             zmq::proxy(router, dealer);
 
@@ -88,25 +82,29 @@ struct PublisherPrivate
 };
 
 
-
-
 Publisher::Publisher(uint port, QObject* parent /*= nullptr*/)
     : QObject(parent), _d(new PublisherPrivate(port))
 {
-
+    connect(&_d->mon.connectedMonitor.signal, &MonitorSignalingDevice::connected, this, &Publisher::startProduce, Qt::QueuedConnection);
+    connect(&_d->mon.connectedMonitor.signal, &MonitorSignalingDevice::disconnected, this, &Publisher::stopProduce, Qt::QueuedConnection);
 }
+
 
 Publisher::~Publisher()
 {
     delete _d;
 }
 
+
 uint Publisher::port() const
 {
     return _d->port;
 }
 
+
 void Publisher::publish(QByteArray const& msg, QString channel)
 {
     _d->publish(msg, channel);
 }
+
+

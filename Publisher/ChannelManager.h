@@ -15,29 +15,34 @@ class ChannelManager : public QObject
 
     using ProducerPtr = std::shared_ptr<DataProducer>;
     //! Channel name, message size, speed
-    using ChannelData = std::tuple<QString, int, int>;
+    using ProducrData = std::pair<int, int>;
+    using PublisherPtr = std::shared_ptr<Publisher>;
 
 public:
-    explicit ChannelManager(ChannelData data, std::shared_ptr<Publisher> publisher,  QObject *parent = nullptr);
+    explicit ChannelManager(QString name , QList<ProducrData> data, std::shared_ptr<Publisher> publisher,  QObject *parent = nullptr);
     ~ChannelManager() override = default;
 
     QString chanelName() const;
 
 public slots:
     void handleMessage(const QByteArray message);
+    void stop();
 
 signals:
+    void startProduce();
+    void stopProduce();
 
 private:
-    QList<ProducerPtr>            _producers;
-    std::shared_ptr<Publisher>    _publisher;
+    QList<ProducerPtr> _producers;
+    PublisherPtr       _publisher;
 
-    QString _channelName;
     int _messageSize;
     int _speed;
 
+    QString _channelName;
+
     std::atomic<unsigned int> _messagesCounter;
 
-    void _createProducer(int messageSize);
+    void _createProducer(int messageSize, int speed);
 };
 

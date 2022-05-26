@@ -3,7 +3,6 @@
 #include <QObject>
 #include <QList>
 
-
 #include <memory>
 
 #include "ChannelManager.h"
@@ -14,16 +13,21 @@ class PublisherManager : public QObject
     Q_OBJECT
 
     //! Channel name, message size, speed
-    using ChannelData = std::tuple<QString, int, int>;
+    using ProducerData = std::pair<int, int>;
+    using ChannelManagerPtr = std::shared_ptr<ChannelManager>;
 
 public:
-    explicit PublisherManager(int port, QObject *parent = nullptr);
+    explicit PublisherManager(int port = 0, QObject *parent = nullptr);
     ~PublisherManager() override = default;
 
-    void appendChannel(ChannelData data);
+    void appendChannel(QString name, QList<ProducerData> data);
+
+signals:
+    void startProduce();
+    void stopProduce();
 
 private:
     std::shared_ptr<Publisher> _publisher;
-    QList<ChannelManager> _channels;
+    QList<ChannelManagerPtr>   _channels;
 };
 

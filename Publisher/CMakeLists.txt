@@ -1,8 +1,11 @@
-add_executable(publisher
+add_executable(test-publisher
   main.cpp
-  Publisher.cpp
-  publisherapp.cpp
-  DataProducer.cpp
+  Publisher.cpp Publisher.h
+  PublisherApp.cpp PublisherApp.h
+  DataProducer.cpp DataProducer.h
+  CommandLineParser.h CommandLineParser.cpp
+  ChannelManager.h ChannelManager.cpp
+  PublisherManager.h PublisherManager.cpp
 )
 
-target_link_libraries(publisher Qt${QT_VERSION_MAJOR}::Core cppzmq Boost::atomic)
+target_link_libraries(test-publisher Qt${QT_VERSION_MAJOR}::Core cppzmq)

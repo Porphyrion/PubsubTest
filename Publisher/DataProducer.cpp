@@ -1,29 +1,26 @@
-#include <QDebug>
-
 #include "DataProducer.h"
 
-DataProducer::DataProducer(std::string message, int speed, QObject *parent)
-    : QObject{parent}, _message(message), _count(0)
+DataProducer::DataProducer(int messageSize, int speed,  QObject *parent)
+    : QObject{parent}, _message(messageSize, 'f'), _speed(speed), _size(messageSize), _timerId(0)
 {
-    startTimer(speed);
+
 }
 
 
-std::string DataProducer::produce()
+void DataProducer::produce()
 {
-    return _createMessage();
+     _timerId = startTimer(_speed);
 }
 
 
-std::string DataProducer::_createMessage()
+void DataProducer::stopProduce()
 {
-    auto result = _message + " " + std::to_string(_count++);
-    return result;
+    killTimer(_timerId);
 }
 
 
 void DataProducer::timerEvent(QTimerEvent *event)
 {
-    emit sendMessage(QString::fromStdString(_createMessage()));
+    emit sendMessage(_message);
 }
 

@@ -1,16 +1,18 @@
 #include "ChannelManager.h"
+#include <QTimer>
 
-ChannelManager::ChannelManager(ChannelData data, std::shared_ptr<Publisher> publisher, QObject *parent) :
+#include <QDebug>
+
+ChannelManager::ChannelManager(QString name , QList<ProducrData> data, std::shared_ptr<Publisher> publisher, QObject *parent) :
     QObject{parent},
     _publisher(publisher),
-    _channelName(std::get<0>(data)),
-    _messageSize(std::get<1>(data)),
-    _speed(std::get<2>(data)),
+    _channelName(name),
     _messagesCounter(0)
 {
-    auto producerCount = _speed/20;
-    for(auto i = 0; i < producerCount; ++i)
-        _createProducer(_messageSize);
+    for(auto prodData : data)
+        _createProducer(prodData.first, prodData.second);
+
+    qInfo()<< "Created channel" << _channelName << "messages types amount: " << _producers.size();
 }
 
 
@@ -21,11 +23,23 @@ void ChannelManager::handleMessage(const QByteArray message)
 }
 
 
-void ChannelManager::_createProducer(int messageSize)
+void ChannelManager::stop()
+{
+    qInfo()<<"Chanel"<<_channelName<<"sent" <<_messagesCounter;
+    _messagesCounter = 0;
+
+    emit stopProduce();
+}
+
+
+void ChannelManager::_createProducer(int messageSize, int speed)
 {
     ProducerPtr p;
-    p = std::make_shared<DataProducer>(messageSize, 50,  this);
+    p = std::make_shared<DataProducer>(messageSize, speed,  this);
 
     connect(p.get(), &DataProducer::sendMessage, this, &ChannelManager::handleMessage);
+    connect(this, &ChannelManager::startProduce, p.get(), &DataProducer::produce);
+    connect(this, &ChannelManager::stopProduce, p.get(), &DataProducer::stopProduce);
+
     _producers.append(p);
 }

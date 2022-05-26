@@ -1,7 +1,6 @@
 #pragma once
 
 #include <QObject>
-#include <QMap>
 
 #include <QCommandLineParser>
 #include <QCommandLineOption>
@@ -12,42 +11,36 @@ class CommandLineParser : public QObject
     Q_OBJECT;
 public:
 
-    //! Channel name, message size, speed
-    using ChannelData = std::tuple<QString, int, int>;
+    //! Channel  message size, velocity
+    using ProducerData = std::pair<int, int>;
 
     struct AppData
     {
-        QList<ChannelData> channels;
-        bool severalPublishers = false;
-        int port = 1488;
+        QList<ProducerData> _producers;
+        QList<QString> _chanelNames;
+        int port;
     };
 
-    CommandLineParser(QStringList args);
+    CommandLineParser(QStringList args, QObject * parent = nullptr);
 
      bool parse();
      AppData data();
 
      QString help();
 
-signals:
-    void error(QString text);
-
 private:
     QCommandLineParser _parser;
 
     QCommandLineOption _channelSizeOption;
+    QCommandLineOption _producersSizeOption;
     QCommandLineOption _velocityOption;
     QCommandLineOption _mesageSizeOption;
-    QCommandLineOption _channelNameOption;
     QCommandLineOption _portOption;
-    QCommandLineOption _severalPublishersOption;
 
     AppData _data;
     bool _severalChannels = false;
 
     CommandLineParser::AppData _parse();
-
-    QString _lastError;
 
     void _initParser();
 
@@ -56,6 +49,8 @@ private:
     bool _parseChannelOption();
 
     bool _parseUnobligatoryOption();
+
+    QStringList _createChannelNames();
 
     void _fillChannelsData(QStringList&& velocity, QStringList&& messageSize, QStringList&& names);
 };

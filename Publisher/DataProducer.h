@@ -1,24 +1,33 @@
 #pragma once
 
 #include <QObject>
-#include <string>
+#include <QByteArray>
 
 class DataProducer : public QObject
 {
     Q_OBJECT
 public:
-    explicit DataProducer(std::string message, int speed,  QObject *parent = nullptr);
+    explicit DataProducer(int messageSize, int speed,  QObject *parent = nullptr);
 
-    std::string produce();
+
+    int size() { return _size;}
+    int speed() {return _speed;}
+
+
+public slots:
+     void produce();
+     void stopProduce();
 
 signals:
-    void sendMessage(QString message);
+    void sendMessage(const QByteArray message);
 
 private:
-    std::string _message;
-    unsigned int _count;
+    QByteArray _message;
 
-    std::string _createMessage();
+    int _speed;
+    int _size;
+
+    int _timerId;
 
 protected:
     void timerEvent(QTimerEvent *event) override;

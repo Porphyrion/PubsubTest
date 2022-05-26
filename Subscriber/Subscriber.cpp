@@ -32,6 +32,7 @@ struct SubscriberPrivate
     ~SubscriberPrivate() {
         stop();
         subscriberThread.join();
+        monitoringThread.join();
     }
 
 
@@ -39,6 +40,7 @@ struct SubscriberPrivate
     zmq::socket_t  controller;
     QString        controllerBind;
     std::thread    subscriberThread;
+    std::thread    monitoringThread;
     QString        inprocUuid;
     QString        host;
     uint           port;
@@ -59,6 +61,11 @@ struct SubscriberPrivate
 
         items.push_back(zmq::pollitem_t{ controller.handle(), 0, ZMQ_POLLIN, 0 });
         items.push_back(zmq::pollitem_t{ subscriber.handle(), 0, ZMQ_POLLIN, 0 });
+
+
+        auto monitor = new Monitoring;
+        monitoringThread = std::thread(std::bind(&Monitoring::monitor, monitor, std::ref(subscriber)));
+
 
         while (true) {
 
