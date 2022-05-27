@@ -65,10 +65,13 @@ public:
 
     void subscribe(QString channel);
 
+public slots:
+    void stopReceiving();
+
 signals:
     void received(QByteArray data, QString channel);
 
 private:
-
     SubscriberPrivate* _d = nullptr;
+
 };

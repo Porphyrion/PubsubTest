@@ -101,8 +101,8 @@ struct SubscriberPrivate
                 assert(result && "recv failed");
                 assert(*result == 2);
 
-                QByteArray data(static_cast<const char*>(recv_msgs[1].data()), recv_msgs[1].size());
-                QByteArray channel(static_cast<const char*>(recv_msgs[0].data()), recv_msgs[0].size());
+                //QByteArray data(static_cast<const char*>(recv_msgs[1].data()), recv_msgs[1].size());
+                //QByteArray channel(static_cast<const char*>(recv_msgs[0].data()), recv_msgs[0].size());
             }
         }
     }
@@ -143,3 +143,8 @@ void Subscriber::subscribe(QString channel)
     _d->subscribe(channel);
 }
 
+
+void Subscriber::stopReceiving()
+{
+    _d->stop();
+}

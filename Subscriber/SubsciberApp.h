@@ -17,6 +17,9 @@ public:
 
     bool init();
 
+signals:
+    void stop();
+
 private:
     std::shared_ptr<Subscriber> _subscriber;
     CommandLineParserSub _parser;

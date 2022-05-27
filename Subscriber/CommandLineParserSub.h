@@ -8,9 +8,10 @@ class CommandLineParserSub
 public:
     struct SubscriberData
     {
-        QString chanel;
+        QStringList chanels;
         QString host;
         int port;
+        int timeout;
     };
 
     CommandLineParserSub(QStringList args);
@@ -27,10 +28,10 @@ private:
     QCommandLineOption _portOption;
     QCommandLineOption _hostOption;
     QCommandLineOption _chanelOption;
+    QCommandLineOption _timeOutOption;
 
     SubscriberData _data;
 
     void _initParser();
-
 };
 

@@ -4,7 +4,8 @@ CommandLineParserSub::CommandLineParserSub(QStringList args) :
     _parser(),
     _portOption(QStringList()<<"p"<<"port", "Port", "Port"),
     _hostOption(QStringList()<<"host", "Host", "Host"),
-    _chanelOption(QStringList()<<"c"<<"chanel", "Chanel", "Chanel")
+    _chanelOption(QStringList()<<"c"<<"chanel", "Chanel", "Chanel"),
+    _timeOutOption(QStringList()<<"t"<<"timeout","Timeout", "Subscribtion duration" )
 {
     _initParser();
     _parser.process(args);
@@ -13,20 +14,13 @@ CommandLineParserSub::CommandLineParserSub(QStringList args) :
 
 bool CommandLineParserSub::parse()
 {
-    if(_parser.isSet(_hostOption))
-        _data.host = _parser.value(_hostOption);
-    else
-        _data.host = _hostOption.defaultValues().first();
+    _data.host = _parser.isSet(_hostOption) ? _parser.value(_hostOption) :  _hostOption.defaultValues().first();
 
-    if(_parser.isSet(_portOption))
-        _data.port = _parser.value(_portOption).toInt();
-    else
-        _data.port = _portOption.defaultValues().first().toInt();
+    _data.port = _parser.isSet(_portOption) ? _parser.value(_portOption).toInt() : _portOption.defaultValues().first().toInt();
 
-    if(_parser.isSet(_chanelOption))
-        _data.chanel = _parser.value(_chanelOption);
-    else
-        _data.chanel = _chanelOption.defaultValues().first();
+    _data.chanels = _parser.isSet(_chanelOption) ? _parser.value(_chanelOption).split(",") : _chanelOption.defaultValues();
+
+    _data.timeout = _parser.isSet(_timeOutOption) ? _parser.value(_timeOutOption).toInt() : _timeOutOption.defaultValues().first().toInt();
 
     return true;
 }
@@ -42,6 +36,9 @@ void CommandLineParserSub::_initParser()
     _hostOption.setDefaultValue("127.0.0.1");
     _parser.addOption(_hostOption);
 
-    _chanelOption.setDefaultValue("test1");
+    _chanelOption.setDefaultValues({"test1"});
     _parser.addOption(_chanelOption);
+
+    _timeOutOption.setDefaultValue("1000");
+    _parser.addOption(_timeOutOption);
 }
