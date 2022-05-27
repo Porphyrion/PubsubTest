@@ -33,14 +33,7 @@ signals:
 
 class connect_monitor_t : public zmq::monitor_t {
 
-
 public:
-    void on_event_connected(const zmq_event_t& event,
-                            const char* addr) override
-    {
-        qDebug() << "Got connection from " << addr;
-    }
-
     void on_event_accepted(const zmq_event_t& event,
                            const char* addr) override
     {
@@ -55,12 +48,6 @@ public:
         qDebug()<< "Client disconnected" << addr;
         signal.stopProduce();
 
-    }
-
-    void on_event_closed(const zmq_event_t& event,
-                           const char* addr) override
-    {
-         qDebug()<< "Client disconnected" << addr;
     }
 
     void on_monitor_started() override

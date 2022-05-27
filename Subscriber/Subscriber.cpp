@@ -1,5 +1,7 @@
 #include "Subscriber.h"
 
+#include <atomic>
+
 #include <QUuid>
 #include <QDebug>
 #include <QJsonObject>
@@ -20,7 +22,7 @@ struct SubscriberPrivate
     static constexpr const char* MSG_STOP = "stop";
 
     SubscriberPrivate(Subscriber* parent, QString host, uint port)
-        : ctx(2), host(host), port(port), parent(parent)
+        : ctx(2), host(host), port(port), parent(parent), counter(0)
     {
         controllerBind = "inproc://#controller";
         controller = zmq::socket_t(ctx, zmq::socket_type::push);
@@ -36,16 +38,17 @@ struct SubscriberPrivate
     }
 
 
-    zmq::context_t ctx;
-    zmq::socket_t  controller;
-    QString        controllerBind;
-    std::thread    subscriberThread;
-    std::thread    monitoringThread;
-    QString        inprocUuid;
-    QString        host;
-    uint           port;
-    QStringList    channels;
-    Subscriber*    parent;
+    zmq::context_t  ctx;
+    zmq::socket_t   controller;
+    QString         controllerBind;
+    std::thread     subscriberThread;
+    std::thread     monitoringThread;
+    QString         inprocUuid;
+    QString         host;
+    uint            port;
+    QStringList     channels;
+    Subscriber*     parent;
+    std::atomic_int counter;
 
     void subscribeWorker() {
 
@@ -101,6 +104,7 @@ struct SubscriberPrivate
                 assert(result && "recv failed");
                 assert(*result == 2);
 
+                ++counter;
                 //QByteArray data(static_cast<const char*>(recv_msgs[1].data()), recv_msgs[1].size());
                 //QByteArray channel(static_cast<const char*>(recv_msgs[0].data()), recv_msgs[0].size());
             }
@@ -126,6 +130,9 @@ struct SubscriberPrivate
         };
 
         zmq::send_multipart(controller, msg);
+
+        qInfo()<<"Subscriber have received"<<counter<<"messages";
+        counter=0;
     }
 };
 
