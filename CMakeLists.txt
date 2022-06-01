@@ -15,7 +15,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 
-find_package(Boost REQUIRED COMPONENTS atomic)
 find_package(cppzmq)
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Publisher")
