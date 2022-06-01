@@ -50,7 +50,6 @@ struct PublisherPrivate
             dealer.bind(QString("tcp://*:%1").arg(port).toUtf8().constData());
 
             monitorThread = std::thread(std::bind(&Monitoring::monitor, &mon, std::ref(dealer)));
-
             zmq::proxy(router, dealer);
 
         } catch (const std::exception& e) {

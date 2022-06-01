@@ -10,7 +10,7 @@ CommandLineParser::CommandLineParser(QStringList args, QObject * parent) :
     _channelSizeOption(QStringList()<<"n"<<"number", "Number of chanels", "Number"),
     _producersSizeOption(QStringList()<<"p"<<"producers", "Number of producers", "Producers"),
     _velocityOption(QStringList()<<"v"<<"velocitys","Velocity in messages per second. Can accept several parameters", "Velocity"),
-    _mesageSizeOption(QStringList()<<"s"<<"sizes", "Message size. Can accept several parameters", "Size"),
+    _mesageSizeOption(QStringList()<<"b "<<"bytes", "Message size in bytes. Can accept several parameters", "Size"),
     _portOption(QStringList()<<"port", "Port binding", "Port")
 {
     _initParser();

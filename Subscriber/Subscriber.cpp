@@ -7,6 +7,8 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QCoreApplication>
+#include <map>
+#include <algorithm>
 
 #include <thread>
 
@@ -22,7 +24,7 @@ struct SubscriberPrivate
     static constexpr const char* MSG_STOP = "stop";
 
     SubscriberPrivate(Subscriber* parent, QString host, uint port)
-        : ctx(2), host(host), port(port), parent(parent), counter(0)
+        : ctx(2), host(host), port(port), parent(parent)
     {
         controllerBind = "inproc://#controller";
         controller = zmq::socket_t(ctx, zmq::socket_type::push);
@@ -48,7 +50,8 @@ struct SubscriberPrivate
     uint            port;
     QStringList     channels;
     Subscriber*     parent;
-    std::atomic_int counter;
+
+    std::map<QString, std::atomic_int> counter;
 
     void subscribeWorker() {
 
@@ -65,10 +68,8 @@ struct SubscriberPrivate
         items.push_back(zmq::pollitem_t{ controller.handle(), 0, ZMQ_POLLIN, 0 });
         items.push_back(zmq::pollitem_t{ subscriber.handle(), 0, ZMQ_POLLIN, 0 });
 
-
         auto monitor = new Monitoring;
         monitoringThread = std::thread(std::bind(&Monitoring::monitor, monitor, std::ref(subscriber)));
-
 
         while (true) {
 
@@ -89,6 +90,7 @@ struct SubscriberPrivate
                 if (msgType == MSG_STOP) {
                     break;
                 } else if (msgType == MSG_SUBSCRIBE) {
+                    counter[QString::fromStdString(channel)] = 0;
                     subscriber.set(zmq::sockopt::subscribe, channel.c_str());
                 } else if (msgType == MSG_UNSUBSCRIBE) {
                     subscriber.set(zmq::sockopt::unsubscribe, channel.c_str());
@@ -104,9 +106,10 @@ struct SubscriberPrivate
                 assert(result && "recv failed");
                 assert(*result == 2);
 
-                ++counter;
+
                 //QByteArray data(static_cast<const char*>(recv_msgs[1].data()), recv_msgs[1].size());
-                //QByteArray channel(static_cast<const char*>(recv_msgs[0].data()), recv_msgs[0].size());
+                QString channel(static_cast<const char*>(recv_msgs[0].data()));
+                ++counter[channel];
             }
         }
     }
@@ -131,8 +134,9 @@ struct SubscriberPrivate
 
         zmq::send_multipart(controller, msg);
 
-        qInfo()<<"Subscriber have received"<<counter<<"messages";
-        counter=0;
+        std::for_each(counter.begin(), counter.end(), [](std::pair<const QString, std::atomic_int>& puk){
+            qInfo()<<puk.first <<puk.second;
+        });
     }
 };
 
