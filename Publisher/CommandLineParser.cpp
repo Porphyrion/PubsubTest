@@ -136,7 +136,7 @@ QStringList CommandLineParser::_createChannelNames()
             names.append(QString("test") + QString::number(i));
     }
     else
-        names.append(QString("test") + QString::number(1));
+        names.append(QString("test") + QString::number(0));
 
     return names;
 }
