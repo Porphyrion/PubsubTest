@@ -16,26 +16,26 @@ public:
     void on_event_connected(const zmq_event_t& event,
                             const char* addr) override
     {
-        qDebug() << "Got connection from " << addr;
+        qInfo() << "Got connection from " << addr;
     }
 
     void on_event_accepted(const zmq_event_t& event,
                            const char* addr) override
     {
-        qDebug() << "Got accepting from " << addr;
+        qInfo() << "Got accepting from " << addr;
     }
 
 
     void on_event_disconnected(const zmq_event_t& event,
                                const char* addr) override
     {
-        qDebug()<< "Server disconnected";
+        qInfo()<< "Server disconnected";
     }
 
 
     void on_monitor_started() override
     {
-        qDebug()<<"Monitor started";
+        qInfo()<<"Monitor started";
     }
 };
 

@@ -37,7 +37,7 @@ public:
     void on_event_accepted(const zmq_event_t& event,
                            const char* addr) override
     {
-        qDebug() << "Client connected from " << addr;
+        qInfo() << "Client connected from " << addr;
         signal.startProduce();
     }   
 
@@ -45,14 +45,14 @@ public:
     void on_event_disconnected(const zmq_event_t& event,
                                const char* addr) override
     {
-        qDebug()<< "Client disconnected" << addr;
+        qInfo()<< "Client disconnected" << addr;
         signal.stopProduce();
 
     }
 
     void on_monitor_started() override
     {
-        qDebug()<<"Monitor started";
+        qInfo()<<"Monitor started";
     }
 
 
