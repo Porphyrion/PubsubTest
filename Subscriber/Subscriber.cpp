@@ -52,6 +52,7 @@ struct SubscriberPrivate
     Subscriber*     parent;
 
     std::map<QString, std::atomic_int> counter;
+    std::map<QString, std::atomic_int> lastMessages;
 
     void subscribeWorker() {
 
@@ -91,6 +92,7 @@ struct SubscriberPrivate
                     break;
                 } else if (msgType == MSG_SUBSCRIBE) {
                     counter[QString::fromStdString(channel)] = 0;
+                    lastMessages[QString::fromStdString(channel)] = 0;
                     subscriber.set(zmq::sockopt::subscribe, channel.c_str());
                 } else if (msgType == MSG_UNSUBSCRIBE) {
                     subscriber.set(zmq::sockopt::unsubscribe, channel.c_str());
@@ -107,8 +109,22 @@ struct SubscriberPrivate
                 assert(*result == 2);
 
 
-                //QByteArray data(static_cast<const char*>(recv_msgs[1].data()), recv_msgs[1].size());
-                QString channel(static_cast<const char*>(recv_msgs[0].data()));
+                auto data = recv_msgs[1].to_string();
+                auto messID = QString::fromStdString(data.substr(data.rfind(":")+1)).toInt();
+                auto pubCounter = recv_msgs[1].to_string();
+                QString channel = QString::fromStdString(recv_msgs[0].to_string());
+                if(counter[channel])
+                {
+                    if((lastMessages[channel] + 1) != messID)
+                         qWarning()<< "Sequence failed. Received "<< messID << "last message id"<<lastMessages[channel];
+                    lastMessages[channel] = messID;
+                }
+                else
+                {
+                    qInfo()<<"First message received:" <<messID;
+                    lastMessages[channel]= messID;
+                }
+
                 ++counter[channel];
             }
         }
@@ -135,7 +151,10 @@ struct SubscriberPrivate
         zmq::send_multipart(controller, msg);
 
         std::for_each(counter.begin(), counter.end(), [](std::pair<const QString, std::atomic_int>& puk){
-            qInfo()<<puk.first <<puk.second;
+            qInfo()<<puk.first << "received"<<puk.second;
+        });
+        std::for_each(lastMessages.begin(), lastMessages.end(), [](std::pair<const QString, std::atomic_int>& puk){
+            qInfo()<<puk.first <<"last received message:" <<puk.second;
         });
     }
 };

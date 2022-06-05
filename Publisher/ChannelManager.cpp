@@ -18,7 +18,8 @@ ChannelManager::ChannelManager(QString name , QList<ProducrData> data, std::shar
 
 void ChannelManager::handleMessage(const QByteArray message)
 {
-     _publisher->publish(message, _channelName);
+     auto fullMessage = (message + ":" + QString::number(_messagesCounter)).toUtf8();
+     _publisher->publish(fullMessage, _channelName);
      ++_messagesCounter;
 }
 
