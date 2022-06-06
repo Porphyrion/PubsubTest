@@ -134,6 +134,7 @@ struct SubscriberPrivate
                     if((channel.lastMessageId + 1) != messID)
                     {
                         qWarning()<< "Sequence failed. Received "<< messID << "previous message id"<<channel.lastMessageId;
+                        ++channel.sequenceFailed;
                     }
                 }
                 else
