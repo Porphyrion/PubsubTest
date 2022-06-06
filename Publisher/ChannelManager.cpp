@@ -1,5 +1,6 @@
 #include "ChannelManager.h"
 #include <QTimer>
+#include <QDateTime>
 
 #include <QDebug>
 
@@ -18,9 +19,14 @@ ChannelManager::ChannelManager(QString name , QList<ProducrData> data, std::shar
 
 void ChannelManager::handleMessage(const QByteArray message)
 {
-     auto fullMessage = (message + ":" + QString::number(_messagesCounter)).toUtf8();
-     _publisher->publish(fullMessage, _channelName);
-     ++_messagesCounter;
+
+    if(!_messagesCounter)
+        qInfo()<<_channelName<<"started publishing at "<<QDateTime::currentDateTime().toMSecsSinceEpoch();
+
+    auto fullMessage = (message + ":" + QString::number(_messagesCounter)).toUtf8();
+    _publisher->publish(fullMessage, _channelName);
+    ++_messagesCounter;
+
 }
 
 

@@ -116,12 +116,12 @@ struct SubscriberPrivate
                 if(counter[channel])
                 {
                     if((lastMessages[channel] + 1) != messID)
-                         qWarning()<< "Sequence failed. Received "<< messID << "last message id"<<lastMessages[channel];
+                         qWarning()<< "Sequence failed. Received "<< messID << "previous message id"<<lastMessages[channel];
                     lastMessages[channel] = messID;
                 }
                 else
                 {
-                    qInfo()<<"First message received:" <<messID;
+                    qInfo()<<channel<<"first message received:" <<messID<< "at" <<QDateTime::currentDateTime().toMSecsSinceEpoch();
                     lastMessages[channel]= messID;
                 }
 
