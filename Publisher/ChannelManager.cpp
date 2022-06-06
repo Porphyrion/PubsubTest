@@ -20,7 +20,7 @@ ChannelManager::ChannelManager(QString name , QList<ProducrData> data, std::shar
 void ChannelManager::handleMessage(const QByteArray message)
 {
 
-    if(!_messagesCounter)
+    if(_messagesCounter.load() == 0)
         qInfo()<<_channelName<<"started publishing at "<<QDateTime::currentDateTime().toMSecsSinceEpoch();
 
     auto fullMessage = (message + ":" + QString::number(_messagesCounter)).toUtf8();

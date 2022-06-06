@@ -48,11 +48,24 @@ struct SubscriberPrivate
     QString         inprocUuid;
     QString         host;
     uint            port;
-    QStringList     channels;
     Subscriber*     parent;
 
-    std::map<QString, std::atomic_int> counter;
-    std::map<QString, std::atomic_int> lastMessages;
+    struct ChannelMessagesData
+    {
+        ChannelMessagesData(): counter(0), lastMessageId(0), sequenceFailed(0){}
+        ChannelMessagesData(const ChannelMessagesData& other)
+        {
+            this->counter.store(other.counter);
+            this->lastMessageId.store(other.lastMessageId);
+            this->sequenceFailed.store(other.sequenceFailed);
+        }
+
+        std::atomic_int counter;
+        std::atomic_int lastMessageId;
+        std::atomic_int sequenceFailed;
+    };
+
+    std::map<std::string, ChannelMessagesData> channels;
 
     void subscribeWorker() {
 
@@ -91,8 +104,7 @@ struct SubscriberPrivate
                 if (msgType == MSG_STOP) {
                     break;
                 } else if (msgType == MSG_SUBSCRIBE) {
-                    counter[QString::fromStdString(channel)] = 0;
-                    lastMessages[QString::fromStdString(channel)] = 0;
+                    channels.emplace(channel,ChannelMessagesData{});
                     subscriber.set(zmq::sockopt::subscribe, channel.c_str());
                 } else if (msgType == MSG_UNSUBSCRIBE) {
                     subscriber.set(zmq::sockopt::unsubscribe, channel.c_str());
@@ -110,22 +122,29 @@ struct SubscriberPrivate
 
 
                 auto data = recv_msgs[1].to_string();
-                auto messID = QString::fromStdString(data.substr(data.rfind(":")+1)).toInt();
-                auto pubCounter = recv_msgs[1].to_string();
-                QString channel = QString::fromStdString(recv_msgs[0].to_string());
-                if(counter[channel])
+                auto messID = std::stoul(data.substr(data.rfind(":")+1));
+                auto channelName = recv_msgs[0].to_string();
+
+                auto& channel = channels[channelName];
+
+                auto isItFirst = (channel.counter.load() == 0);
+
+                if(!isItFirst)
                 {
-                    if((lastMessages[channel] + 1) != messID)
-                         qWarning()<< "Sequence failed. Received "<< messID << "previous message id"<<lastMessages[channel];
-                    lastMessages[channel] = messID;
+                    if((channel.lastMessageId + 1) != messID)
+                    {
+                        qWarning()<< "Sequence failed. Received "<< messID << "previous message id"<<channel.lastMessageId;
+                    }
                 }
                 else
                 {
-                    qInfo()<<channel<<"first message received:" <<messID<< "at" <<QDateTime::currentDateTime().toMSecsSinceEpoch();
-                    lastMessages[channel]= messID;
+                    qInfo()<<channelName.data() <<"first message received:" << messID << "at" <<QDateTime::currentDateTime().toMSecsSinceEpoch();
                 }
 
-                ++counter[channel];
+
+                channel.lastMessageId = messID;
+
+                ++channel.counter;
             }
         }
     }
@@ -150,11 +169,8 @@ struct SubscriberPrivate
 
         zmq::send_multipart(controller, msg);
 
-        std::for_each(counter.begin(), counter.end(), [](std::pair<const QString, std::atomic_int>& puk){
-            qInfo()<<puk.first << "received"<<puk.second;
-        });
-        std::for_each(lastMessages.begin(), lastMessages.end(), [](std::pair<const QString, std::atomic_int>& puk){
-            qInfo()<<puk.first <<"last received message:" <<puk.second;
+        std::for_each(channels.begin(), channels.end(), [](std::pair<const std::string, ChannelMessagesData>& data){
+            qInfo()<<data.first.data()<< "received"<<data.second.counter<<"Sequence lost"<<data.second.sequenceFailed<<"Last received messege id"<<data.second.lastMessageId;
         });
     }
 };
