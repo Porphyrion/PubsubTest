@@ -20,9 +20,9 @@ ChannelManager::ChannelManager(QString name , QList<ProducrData> data, std::shar
 
 void ChannelManager::handleMessage(const QByteArray message)
 {
-
     if(_messagesCounter.load() == 0)
         qInfo()<<_channelName<<"started publishing at "<<QDateTime::currentDateTime().toMSecsSinceEpoch();
+
 
     auto fullMessage = (message + ":" + QString::number(_messagesCounter)).toUtf8();
     _publisher->publish(fullMessage, _channelName);
@@ -34,11 +34,13 @@ void ChannelManager::handleMessage(const QByteArray message)
 void ChannelManager::stop()
 {
     qInfo()<<"Chanel"<<_channelName<<"sent" <<_messagesCounter;
+
     _messagesCounter = 0;
+
+    // QTimer::singleShot(2000, [=](){QCoreApplication::exit(0);});
 
     emit stopProduce();
 
-    QTimer::singleShot(1000, [=](){QCoreApplication::exit(0);});
 }
 
 

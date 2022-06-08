@@ -12,7 +12,7 @@ DataProducer::DataProducer(int messageSize, int speed,  QObject *parent)
 void DataProducer::produce()
 {
       for(auto i = 0; i < _timersAmount; ++i)
-        startTimer(FREQUENCY);
+        _timersId.append(startTimer(FREQUENCY));
 }
 
 
