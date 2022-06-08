@@ -2,10 +2,14 @@
 
 #include <QObject>
 #include <QByteArray>
+#include <QList>
 
 class DataProducer : public QObject
 {
     Q_OBJECT
+
+     const int FREQUENCY = 10;
+
 public:
     explicit DataProducer(int messageSize, int speed,  QObject *parent = nullptr);
 
@@ -24,10 +28,11 @@ signals:
 private:
     QByteArray _message;
 
+    int _timersAmount;
     int _speed;
     int _size;
 
-    int _timerId;
+     QList<int> _timersId;
 
 protected:
     void timerEvent(QTimerEvent *event) override;

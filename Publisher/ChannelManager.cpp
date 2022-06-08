@@ -42,7 +42,7 @@ void ChannelManager::stop()
 void ChannelManager::_createProducer(int messageSize, int speed)
 {
     ProducerPtr p;
-    p = std::make_shared<DataProducer>(messageSize, 1000/speed,  this);
+    p = std::make_shared<DataProducer>(messageSize, speed,  this);
 
     connect(p.get(), &DataProducer::sendMessage, this, &ChannelManager::handleMessage);
     connect(this, &ChannelManager::startProduce, p.get(), &DataProducer::produce);

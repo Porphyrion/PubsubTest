@@ -1,21 +1,25 @@
 #include "DataProducer.h"
 
 DataProducer::DataProducer(int messageSize, int speed,  QObject *parent)
-    : QObject{parent}, _message(messageSize, 'f'), _speed(speed), _size(messageSize), _timerId(0)
+    : QObject{parent}, _message(messageSize, 'f'), _speed(speed), _size(messageSize)
 {
+    _timersAmount = _speed/100;
+
 
 }
 
 
 void DataProducer::produce()
 {
-     _timerId = startTimer(_speed);
+      for(auto i = 0; i < _timersAmount; ++i)
+        startTimer(_speed);
 }
 
 
 void DataProducer::stopProduce()
 {
-    killTimer(_timerId);
+    for(auto id : _timersId)
+        killTimer(id);
 }
 
 
