@@ -1,6 +1,7 @@
 #include "ChannelManager.h"
 #include <QTimer>
 #include <QDateTime>
+#include <QCoreApplication>
 
 #include <QDebug>
 
@@ -36,6 +37,8 @@ void ChannelManager::stop()
     _messagesCounter = 0;
 
     emit stopProduce();
+
+    QTimer::singleShot(1000, [=](){QCoreApplication::exit(0);});
 }
 
 

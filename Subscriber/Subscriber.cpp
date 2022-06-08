@@ -2,6 +2,8 @@
 
 #include <atomic>
 
+#include <QTimer>
+
 #include <QUuid>
 #include <QDebug>
 #include <QJsonObject>
@@ -194,4 +196,6 @@ void Subscriber::subscribe(QString channel)
 void Subscriber::stopReceiving()
 {
     _d->stop();
+
+    QTimer::singleShot(1000, [=](){QCoreApplication::exit(0);});
 }
