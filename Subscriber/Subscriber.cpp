@@ -86,7 +86,7 @@ struct SubscriberPrivate
 
         auto monitor = new Monitoring;
         monitoringThread = std::thread(std::bind(&Monitoring::monitor, monitor, std::ref(subscriber)));
-
+        zmq::socket_ref soc = subscriber;
         while (true) {
 
             zmq::poll(items);
